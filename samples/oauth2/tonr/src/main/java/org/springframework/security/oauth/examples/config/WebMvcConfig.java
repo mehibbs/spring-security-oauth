@@ -189,7 +189,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 			details.setClientSecret("33b17e044ee6a4fa383f46ec6e28ea1d");
 			details.setAccessTokenUri("https://graph.facebook.com/oauth/access_token");
 			details.setUserAuthorizationUri("https://www.facebook.com/dialog/oauth");
-			details.setTokenName("oauth_token");
 			details.setAuthenticationScheme(AuthenticationScheme.query);
 			details.setClientAuthenticationScheme(AuthenticationScheme.form);
 			return details;
