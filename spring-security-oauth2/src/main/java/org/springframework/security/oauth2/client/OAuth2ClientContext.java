@@ -22,14 +22,16 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 public interface OAuth2ClientContext {
 
 	/**
+	 * @param resourceId The protected resource this token is associated with
 	 * @return the current access token if any (may be null or empty)
 	 */
-	OAuth2AccessToken getAccessToken();
+	OAuth2AccessToken getAccessToken(String resourceId);
 
 	/**
+	 * @param resourceId The protected resource this token is associated with
 	 * @param accessToken the current access token
 	 */
-	void setAccessToken(OAuth2AccessToken accessToken);
+	void setAccessToken(String resourceId, OAuth2AccessToken accessToken);
 
 	/**
 	 * @return the current request if any (may be null or empty)

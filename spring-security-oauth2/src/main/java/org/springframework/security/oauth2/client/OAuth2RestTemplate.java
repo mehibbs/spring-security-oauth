@@ -122,7 +122,7 @@ public class OAuth2RestTemplate extends RestTemplate implements OAuth2RestOperat
 	@Override
 	protected <T> T doExecute(URI url, HttpMethod method, RequestCallback requestCallback,
 			ResponseExtractor<T> responseExtractor) throws RestClientException {
-		OAuth2AccessToken accessToken = context.getAccessToken();
+		OAuth2AccessToken accessToken = context.getAccessToken(resource.getId());
 		RuntimeException rethrow = null;
 		try {
 			return super.doExecute(url, method, requestCallback, responseExtractor);
@@ -138,7 +138,7 @@ public class OAuth2RestTemplate extends RestTemplate implements OAuth2RestOperat
 			rethrow = new OAuth2AccessDeniedException("Invalid token for client=" + getClientId());
 		}
 		if (accessToken != null && retryBadAccessTokens) {
-			context.setAccessToken(null);
+			context.setAccessToken(resource.getId(), null);
 			try {
 				return super.doExecute(url, method, requestCallback, responseExtractor);
 			}
@@ -166,14 +166,14 @@ public class OAuth2RestTemplate extends RestTemplate implements OAuth2RestOperat
 	 */
 	public OAuth2AccessToken getAccessToken() throws UserRedirectRequiredException {
 
-		OAuth2AccessToken accessToken = context.getAccessToken();
+		OAuth2AccessToken accessToken = context.getAccessToken(resource.getId());
 
 		if (accessToken == null || accessToken.isExpired()) {
 			try {
 				accessToken = acquireAccessToken(context);
 			}
 			catch (UserRedirectRequiredException e) {
-				context.setAccessToken(null); // No point hanging onto it now
+				context.setAccessToken(resource.getId(), null); // No point hanging onto it now
 				accessToken = null;
 				String stateKey = e.getStateKey();
 				if (stateKey != null) {
@@ -212,7 +212,7 @@ public class OAuth2RestTemplate extends RestTemplate implements OAuth2RestOperat
 			accessTokenRequest.setPreservedState(oauth2Context.removePreservedState(stateKey));
 		}
 
-		OAuth2AccessToken existingToken = oauth2Context.getAccessToken();
+		OAuth2AccessToken existingToken = oauth2Context.getAccessToken(resource.getId());
 		if (existingToken != null) {
 			accessTokenRequest.setExistingToken(existingToken);
 		}
@@ -223,7 +223,7 @@ public class OAuth2RestTemplate extends RestTemplate implements OAuth2RestOperat
 			throw new IllegalStateException(
 					"Access token provider returned a null access token, which is illegal according to the contract.");
 		}
-		oauth2Context.setAccessToken(accessToken);
+		oauth2Context.setAccessToken(resource.getId(), accessToken);
 		return accessToken;
 	}
 

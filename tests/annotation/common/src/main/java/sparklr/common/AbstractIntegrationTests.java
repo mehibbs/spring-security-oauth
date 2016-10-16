@@ -115,7 +115,7 @@ public abstract class AbstractIntegrationTests {
 	@After
 	public void cancelToken() {
 		try {
-			OAuth2AccessToken token = context.getOAuth2ClientContext().getAccessToken();
+			OAuth2AccessToken token = context.getOAuth2ClientContext().getAccessToken(null);
 			if (token != null) {
 				tokenServices.revokeToken(token.getValue());
 			}

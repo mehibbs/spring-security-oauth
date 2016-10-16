@@ -41,8 +41,11 @@ public class DefaultOAuth2RequestAuthenticatorTests {
 
 	@Test
 	public void addsAccessToken() {
-		context.setAccessToken(new DefaultOAuth2AccessToken("FOO"));
+		context.setAccessToken("BAR", new DefaultOAuth2AccessToken("FOO"));
+		context.setAccessToken("ANOTHER", new DefaultOAuth2AccessToken("TOKEN"));
+
 		BaseOAuth2ProtectedResourceDetails resource = new BaseOAuth2ProtectedResourceDetails();
+		resource.setId("BAR");
 		authenticator.authenticate(resource, context, request);
 		String header = request.getHeaders().getFirst("Authorization");
 		assertEquals("bearer FOO", header);

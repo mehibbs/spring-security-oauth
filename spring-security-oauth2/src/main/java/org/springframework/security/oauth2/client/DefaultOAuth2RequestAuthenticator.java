@@ -28,7 +28,7 @@ public class DefaultOAuth2RequestAuthenticator implements OAuth2RequestAuthentic
 	@Override
 	public void authenticate(OAuth2ProtectedResourceDetails resource, OAuth2ClientContext clientContext,
 			ClientHttpRequest request) {
-		OAuth2AccessToken accessToken = clientContext.getAccessToken();
+		OAuth2AccessToken accessToken = clientContext.getAccessToken(resource.getId());
 		if (accessToken == null) {
 			throw new AccessTokenRequiredException(resource);
 		}

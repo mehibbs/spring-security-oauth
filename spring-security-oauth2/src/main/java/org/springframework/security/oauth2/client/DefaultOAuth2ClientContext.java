@@ -17,7 +17,7 @@ public class DefaultOAuth2ClientContext implements OAuth2ClientContext, Serializ
 
 	private static final long serialVersionUID = 914967629530462926L;
 
-	private OAuth2AccessToken accessToken;
+	private Map<String,OAuth2AccessToken> accessTokens = new HashMap<String, OAuth2AccessToken>();
 
 	private AccessTokenRequest accessTokenRequest;
 
@@ -31,17 +31,17 @@ public class DefaultOAuth2ClientContext implements OAuth2ClientContext, Serializ
 		this.accessTokenRequest = accessTokenRequest;
 	}
 
-	public DefaultOAuth2ClientContext(OAuth2AccessToken accessToken) {
-		this.accessToken = accessToken;
+	public DefaultOAuth2ClientContext(String resourceId, OAuth2AccessToken accessToken) {
+		this.accessTokens.put(resourceId, accessToken);
 		this.accessTokenRequest = new DefaultAccessTokenRequest();
 	}
 
-	public OAuth2AccessToken getAccessToken() {
-		return accessToken;
+	public OAuth2AccessToken getAccessToken(String resourceId) {
+		return accessTokens.get(resourceId);
 	}
 
-	public void setAccessToken(OAuth2AccessToken accessToken) {
-		this.accessToken = accessToken;
+	public void setAccessToken(String resourceId, OAuth2AccessToken accessToken) {
+		this.accessTokens.put(resourceId, accessToken);
 		this.accessTokenRequest.setExistingToken(accessToken);
 	}
 

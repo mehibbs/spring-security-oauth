@@ -54,6 +54,7 @@ public class OAuth2RestTemplateTests {
 	@Before
 	public void open() throws Exception {
 		resource = new BaseOAuth2ProtectedResourceDetails();
+		resource.setId("testResourceId");
 		// Facebook and older specs:
 		resource.setTokenName("bearer_token");
 		restTemplate = new OAuth2RestTemplate(resource);
@@ -71,7 +72,7 @@ public class OAuth2RestTemplateTests {
 	public void testNonBearerToken() throws Exception {
 		DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("12345");
 		token.setTokenType("MINE");
-		restTemplate.getOAuth2ClientContext().setAccessToken(token);
+		restTemplate.getOAuth2ClientContext().setAccessToken(restTemplate.getResource().getId(), token);
 		ClientHttpRequest http = restTemplate.createRequest(URI.create("https://nowhere.com/api/crap"), HttpMethod.GET);
 		String auth = http.getHeaders().getFirst("Authorization");
 		assertTrue(auth.startsWith("MINE "));
@@ -84,10 +85,10 @@ public class OAuth2RestTemplateTests {
 		restTemplate.setAuthenticator(new OAuth2RequestAuthenticator() {
 			@Override
 			public void authenticate(OAuth2ProtectedResourceDetails resource, OAuth2ClientContext clientContext, ClientHttpRequest req) {
-				req.getHeaders().set("X-Authorization", clientContext.getAccessToken().getTokenType() + " " + "Nah-nah-na-nah-nah");
+				req.getHeaders().set("X-Authorization", clientContext.getAccessToken(restTemplate.getResource().getId()).getTokenType() + " " + "Nah-nah-na-nah-nah");
 			}
 		});
-		restTemplate.getOAuth2ClientContext().setAccessToken(token);
+		restTemplate.getOAuth2ClientContext().setAccessToken(restTemplate.getResource().getId(), token);
 		ClientHttpRequest http = restTemplate.createRequest(URI.create("https://nowhere.com/api/crap"), HttpMethod.GET);
 		String auth = http.getHeaders().getFirst("X-Authorization");
 		assertEquals("MINE Nah-nah-na-nah-nah", auth);
@@ -173,7 +174,7 @@ public class OAuth2RestTemplateTests {
 	@Test
 	public void testRetryAccessDeniedException() throws Exception {
 		final AtomicBoolean failed = new AtomicBoolean(false);
-		restTemplate.getOAuth2ClientContext().setAccessToken(new DefaultOAuth2AccessToken("TEST"));
+		restTemplate.getOAuth2ClientContext().setAccessToken(restTemplate.getResource().getId(), new DefaultOAuth2AccessToken("TEST"));
 		restTemplate.setAccessTokenProvider(new StubAccessTokenProvider());
 		restTemplate.setRequestFactory(new ClientHttpRequestFactory() {
 			public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) throws IOException {
@@ -193,7 +194,7 @@ public class OAuth2RestTemplateTests {
 	public void testNewTokenAcquiredIfExpired() throws Exception {
 		DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("TEST");
 		token.setExpiration(new Date(System.currentTimeMillis() - 1000));
-		restTemplate.getOAuth2ClientContext().setAccessToken(token);
+		restTemplate.getOAuth2ClientContext().setAccessToken(restTemplate.getResource().getId(), token);
 		restTemplate.setAccessTokenProvider(new StubAccessTokenProvider());
 		OAuth2AccessToken newToken = restTemplate.getAccessToken();
 		assertNotNull(newToken);
@@ -204,7 +205,10 @@ public class OAuth2RestTemplateTests {
 	public void testTokenIsResetIfInvalid() throws Exception {
 		DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("TEST");
 		token.setExpiration(new Date(System.currentTimeMillis() - 1000));
-		restTemplate.getOAuth2ClientContext().setAccessToken(token);
+		restTemplate.getOAuth2ClientContext().setAccessToken(restTemplate.getResource().getId(), token);
+		DefaultOAuth2AccessToken anotherAccessToken = new DefaultOAuth2AccessToken("TEST2");
+		restTemplate.getOAuth2ClientContext().setAccessToken("anotherResourceToken", anotherAccessToken);
+
 		restTemplate.setAccessTokenProvider(new StubAccessTokenProvider() {
 			@Override
 			public OAuth2AccessToken obtainAccessToken(OAuth2ProtectedResourceDetails details,
@@ -220,8 +224,10 @@ public class OAuth2RestTemplateTests {
 		catch (UserRedirectRequiredException e) {
 			// planned
 		}
-		// context token should be reset as it clearly is invalid at this point
-		assertNull(restTemplate.getOAuth2ClientContext().getAccessToken());
+		// context token (associated with this template) should be reset as it clearly is invalid at this point
+		assertNull(restTemplate.getOAuth2ClientContext().getAccessToken(restTemplate.getResource().getId()));
+		// the token belonging to another protected resource should remain
+		assertSame(anotherAccessToken, restTemplate.getOAuth2ClientContext().getAccessToken("anotherResourceToken"));
 	}
 
 	private final class SimpleResponseExtractor implements ResponseExtractor<Boolean> {
