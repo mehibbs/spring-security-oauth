@@ -1,28 +1,16 @@
 package org.springframework.security.oauth2.provider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import org.junit.*;
+import org.springframework.http.*;
+import org.springframework.security.oauth2.client.test.*;
+import org.springframework.security.oauth2.client.token.grant.client.*;
+import org.springframework.security.oauth2.client.token.grant.password.*;
+import org.springframework.security.oauth2.common.*;
+import org.springframework.security.oauth2.common.exceptions.*;
 
-import java.util.Arrays;
+import java.util.*;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.test.OAuth2ContextConfiguration;
-import org.springframework.security.oauth2.client.test.OAuth2ContextSetup;
-import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.exceptions.InsufficientScopeException;
-import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
+import static org.junit.Assert.*;
 
 /**
  * @author Dave Syer
@@ -72,7 +60,7 @@ public class AdminEndpointsTests {
 		} catch (InsufficientScopeException ex) {
 			assertEquals(HttpStatus.FORBIDDEN.value(), ex.getHttpErrorCode());
 			assertEquals("insufficient_scope", ex.getOAuth2ErrorCode());
-			String secondTokenWithWriteOnlyScope = context.getOAuth2ClientContext().getAccessToken().getValue();
+			String secondTokenWithWriteOnlyScope = context.getOAuth2ClientContext().getAccessToken(null).getValue(); // Need to debug to understand this test
 			assertNotNull(secondTokenWithWriteOnlyScope);
 			assertFalse(secondTokenWithWriteOnlyScope.equals(tokenValueBeforeDeletion));
 		}

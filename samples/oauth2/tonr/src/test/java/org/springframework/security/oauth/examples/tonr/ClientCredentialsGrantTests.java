@@ -1,19 +1,16 @@
 package org.springframework.security.oauth.examples.tonr;
 
 
-import static org.junit.Assert.assertEquals;
+import org.junit.*;
+import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.token.*;
+import org.springframework.security.oauth2.client.token.grant.client.*;
+import org.springframework.security.oauth2.common.*;
+import org.springframework.web.client.*;
 
-import java.util.Arrays;
+import java.util.*;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.token.DefaultAccessTokenRequest;
-import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsAccessTokenProvider;
-import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.web.client.RestTemplate;
+import static org.junit.Assert.*;
 
 /**
  * @author Ryan Heaton
@@ -37,7 +34,7 @@ public class ClientCredentialsGrantTests {
 		ClientCredentialsAccessTokenProvider provider = new ClientCredentialsAccessTokenProvider();
 		OAuth2AccessToken accessToken = provider.obtainAccessToken(resource, new DefaultAccessTokenRequest());
 
-		OAuth2RestTemplate template = new OAuth2RestTemplate(resource, new DefaultOAuth2ClientContext(accessToken));
+		OAuth2RestTemplate template = new OAuth2RestTemplate(resource, new DefaultOAuth2ClientContext(resource.getId(), accessToken));
 		String result = template.getForObject(serverRunning.getUrl("/sparklr2/photos/trusted/message"), String.class);
 		assertEquals("Hello, Trusted Client", result);
 
